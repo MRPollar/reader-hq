@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root{
+    /* backgrounds */
+    --bg-black: #333333;
+    --bg-black-full: #000000; 
+    --bg-white: #e2e2e2;
+
+    /* textos */
+    --text-black: var(--bg-black);
+    --text-black-full: var(--bg-black-full);
+    --text-white: var(--bg-white);
+
+    /* bordas */
+    --border-black: var(--bg-black);
+    --border-black-full: var(--bg-black-full);
+    --border-white: var(--bg-white);
+}
+
+
+html,body{
+    background-color: var(--bg-black);
+    color: var(--text-white);
+}
+
+.view{
+    @apply
+    container
+    px-3
+    py-11
+    mx-auto
+}
+
+.title_page{
+    @apply
+    font-bold
+    text-2xl
+    mb-5
+}
