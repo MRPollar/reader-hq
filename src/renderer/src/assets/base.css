@@ -40,3 +40,11 @@ html,body{
     text-2xl
     mb-5
 }
+
+::-webkit-scrollbar{
+    @apply bg-[var(--bg-black-full)] w-[10px]
+}
+
+::-webkit-scrollbar-thumb{
+    @apply bg-[var(--bg-white)] rounded-xl
+}

@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ref, Ref } from 'vue';
+import { ref, Ref } from 'vue'
 import GridCards from '@renderer/components/GridCards.vue';
 import Card from '@renderer/components/Card.vue';
 import Modal from '@renderer/components/Modal.vue';
 import AlertBox from '@renderer/components/AlertBox.vue';
 import AddForm from '@renderer/components/AddForm.vue';
+
+import { storeSites } from '@renderer/stores/storeSites'
+import { storeToRefs } from 'pinia'
+
+const { sites } = storeToRefs(storeSites());
 
 
 const addItemBox:Ref<boolean> = ref(false);
@@ -39,7 +44,7 @@ const handleAddItemModalToggle = ():void => {
 <template>
     <div class="view">
         <GridCards>
-            <Card v-for="n in nums" :key="n" slug="sussy-scan" @delete="handleDeleteBoxItem"/>
+            <Card v-for="site in sites" :key="site.id" :site="site" @delete="handleDeleteBoxItem"/>
 
             <button class="add-button" title="Adicionar novo site" @click="handleAddItemModalToggle">
                 <Icon icon="solar:add-square-broken"/>

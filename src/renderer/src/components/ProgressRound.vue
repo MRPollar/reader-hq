@@ -81,7 +81,7 @@ const { progress, verify } = storeToRefs(store);
     }
 
     .loader svg circle{
-        animation: loading 2000ms linear infinite;
+        animation: loading 3000ms linear infinite;
     }
 
     @keyframes loading {

@@ -28,6 +28,7 @@
     "@types/express": "^5.0.0",
     "axios": "^1.7.8",
     "better-sqlite3": "^11.6.0",
+    "cors": "^2.8.5",
     "express": "^4.21.1",
     "pinia": "^2.2.8",
     "puppeteer": "^23.9.0",

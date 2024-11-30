@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import icon from "@renderer/assets/icon.png";
-defineProps<{ slug:string }>();
+import ISiteItem from '../../../types/ISiteItem'
+defineProps<{ site:ISiteItem }>();
 const emit = defineEmits<{ (e: 'delete', id: number): void; }>();
 
 const handlerClick = (id:number): void => {
@@ -12,18 +13,18 @@ const handlerClick = (id:number): void => {
 
 <template>
     <div class="box-site">
-        <RouterLink class="download-link" :to="{ name: 'download', params: { slug: slug } }">
-            <img width="40" height="40px" :src="icon" alt=""/>
-            <span>Sussy Scan</span>
+        <RouterLink class="download-link" :to="{ name: 'download', params: { slug: site.site_slug } }">
+            <img width="40" height="40px" :src="`http://localhost:4200/icons/${site.image}`" :alt="site.site_name"/>
+            <span>{{ site.site_name }}</span>
         </RouterLink>
         <ul class="box-actions">
             <li>
-                <RouterLink :to="{ name: 'update', params:{ slug: slug } }" title="Editar">
+                <RouterLink :to="{ name: 'update', params:{ slug: site.site_slug } }" title="Editar">
                     <Icon icon="solar:pen-new-square-bold"/>
                 </RouterLink>
             </li>
             <li>
-                <RouterLink @click.prevent="handlerClick(1)" to="#" title="Apagar">
+                <RouterLink @click.prevent="handlerClick(Number(site.id))" to="#" title="Apagar">
                     <Icon icon="solar:trash-bin-2-bold"/>
                 </RouterLink>
             </li>

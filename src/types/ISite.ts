@@ -1,7 +1,7 @@
 import ISiteItem from "./ISiteItem"
 
 interface ISite extends ISiteItem{
-    url_site:string;
+    url:string;
     title_selector:string;
     chapter_selector:string;
     page_selector:string;

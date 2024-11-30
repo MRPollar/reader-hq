@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type IRoute from 'src/types/IRoute';
 import ProgressRound from './components/ProgressRound.vue';
-import { storeProgress } from './stores/storeProgress';
-import { storeToRefs } from 'pinia';
+import { storeSites } from '@renderer/stores/storeSites'
+import { onMounted } from 'vue'
+import { storeProgress } from '@renderer/stores/storeProgress'
 
-const store = storeToRefs(storeProgress());
-
+const storeProgressProperty = storeProgress();
+const storeSitePropertys = storeSites();
 const routes:IRoute[] = [
   {
     icon: 'solar:home-2-bold',
@@ -17,8 +18,13 @@ const routes:IRoute[] = [
     pathname: 'Baixados',
     to: { name: 'baixados' }
   }
-]
-const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+];
+
+onMounted(async () => {
+  await storeSitePropertys.getAllSites();
+  storeProgressProperty.observableProgress();
+})
+
 </script>
 
 <template>
@@ -37,7 +43,7 @@ const ipcHandle = () => window.electron.ipcRenderer.send('ping')
     <main>
       <RouterView/>
     </main>
-    <template v-if="store.visible && !$route.path.startsWith('/download/')">
+    <template v-if="storeProgressProperty.visible && !$route.path.startsWith('/download/')">
       <div class="fixed bottom-2 right-5">
         <ProgressRound/>
       </div>

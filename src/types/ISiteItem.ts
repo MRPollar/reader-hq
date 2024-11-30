@@ -1,7 +1,8 @@
 interface ISiteItem {
     id?:number,
-    name_site:string;
-    slug_site?:string;
+    site_name:string;
+    site_slug?:string;
+    image?:string;
 }
 
 export default ISiteItem

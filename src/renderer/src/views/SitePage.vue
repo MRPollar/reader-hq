@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import type ISiteProps from 'src/types/ISiteProps';
+import type IFiles from 'src/types/IFiles';
+import GridCards from '@renderer/components/GridCards.vue';
+import FileCard from '@renderer/components/FileCard.vue';
+import api from '@renderer/api';
+import { onMounted, Ref, ref } from 'vue';
+const props = defineProps<ISiteProps>()
 
-defineProps<ISiteProps>()
+const files:Ref<IFiles[]> = ref([]);
+
+onMounted(async () => {
+    const { data }:{ data:{ files:IFiles[], ok:boolean } } = await api.get(`/downloads/${props.site}`)
+    files.value = data.files;
+})
 </script>
 
 <template>
     <div class="view">
-        SitePage {{ site }}<br>
-        <RouterLink :to="{name:'story', params:{ site: site, name: 'Dragon Ball' }}">Story</RouterLink>
+        <GridCards>
+            <FileCard v-for="story in files" :key="story.name" :dir="story" name="story" :params="{ site, name: story.name }"/>
+        </GridCards>
     </div>
 </template>
