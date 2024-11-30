@@ -18,12 +18,18 @@ export const storeProgress = defineStore('progress', {
   }),
   actions: {
     observableProgress(){
-      window.electron.ipcRenderer.on("", (e,data:ITaskVerify): void => {
+      window.electron.on("task-verify", (data:ITaskVerify): void => {
         this.$state.visible = data.visible;
         this.$state.verify = data.verify;
         this.$state.message = data.message;
       });
-      window.electron.ipcRenderer.on('task-progress', (e, data:ITaskProgress): void => {
+      window.electron.on('task-progress', (data:ITaskProgress): void => {
+        this.$state.visible = data.visible;
+        this.$state.verify = data.verify;
+        this.$state.message = data.message;
+        this.$state.progress = data.progress;
+      });
+      window.electron.on('alert-progress', (data:ITaskProgress): void => {
         this.$state.visible = data.visible;
         this.$state.verify = data.verify;
         this.$state.message = data.message;

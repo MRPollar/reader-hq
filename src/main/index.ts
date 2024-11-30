@@ -10,8 +10,12 @@ import ITaskProgress from '../types/ITaskProgress'
 import ITaskVerify from '../types/ITaskVerify'
 import ISeletores from '../types/ISeletores'
 import puppeteer, { Browser, Page } from 'puppeteer'
+import axios from 'axios'
+import fs from 'fs'
+import { extname } from 'path'
 
-const server:ServerExpress = new ServerExpress(4200, join(__dirname, '..', '..', 'downloads'));
+const downloadDir: string[] = ['..', '..', 'downloads'];
+const server:ServerExpress = new ServerExpress(4200, join(__dirname, ...downloadDir));
 const db:SQLite = new SQLite(join(__dirname, '..', '..', 'sqlite', 'sites.db'));
 db.createTable(`
     CREATE TABLE IF NOT EXISTS sites (
@@ -67,15 +71,14 @@ function createWindow(): void {
 
 function createInteractionsAndRequests(win:BrowserWindow){
   let current_progress = 0;
-  let total_progress = 0;
 
   const verifyProcess = (verify:boolean, visible:boolean, message:string): void => {
     const response: ITaskVerify = { verify, visible, message }
     win.webContents.send("task-verify", response);
   }
 
-  const downloadProgress = (verify:boolean, visible:boolean, message:string): void => {
-    current_progress = current_progress == total_progress ? 0 : current_progress++;
+  const downloadProgress = (total_progress:number, verify:boolean, visible:boolean, message:string): void => {
+    current_progress++;
     const progress: number = Math.floor((current_progress/total_progress)*100);
     const response: ITaskProgress = {
       verify,
@@ -86,6 +89,11 @@ function createInteractionsAndRequests(win:BrowserWindow){
     win.webContents.send("task-progress", response);
   }
 
+  const alertProcess = (verify:boolean, visible:boolean, message:string): void => {
+    const response:ITaskProgress = { verify, message, visible, progress: 0 }
+    win.webContents.send("alert-progress", response);
+  }
+
   ipcMain.handle('add-site', async (_,data) => {
 
   });
@@ -93,9 +101,9 @@ function createInteractionsAndRequests(win:BrowserWindow){
   ipcMain.handle('download-story', async (_,data:{ url: string, slug:string }) => {
     try{
       verifyProcess(true, true, "Iniciando.")
-      const { title_selector, chapter_selector, page_selector }:ISeletores = db.selectSingle<ISeletores>(
+      const { site_slug, title_selector, chapter_selector, page_selector }:ISeletores = db.selectSingle<ISeletores>(
         'sites',
-        ["title_selector", "chapter_selector", "page_selector"],
+        ["site_slug","title_selector", "chapter_selector", "page_selector"],
         "site_slug=?",
         [data.slug]
       )
@@ -105,16 +113,17 @@ function createInteractionsAndRequests(win:BrowserWindow){
       page.setDefaultTimeout(60 * 60000);
       await page.setUserAgent(userAgent);
 
-      console.log("Acessando: "+data.url);
+      verifyProcess(true, true, "Acessando: "+data.url);
       await page.goto(data.url, { waitUntil: 'networkidle2' });
 
-      console.log("Esperando conteúdo dinâmico");
+      
+      verifyProcess(true, true, "Esperando conteúdo dinâmico");
       await page.waitForFunction(() => document.readyState === 'complete');
 
-      console.log("Esperando Seletor de título")
+      verifyProcess(true, true, "Esperando Seletor de título")
       await page.waitForSelector(title_selector, { timeout: (3 * 60000) });
 
-      console.log("Pegando título");
+      verifyProcess(true, true, "Buscando história");
       let title:string | null = await page.evaluate((selector: string) => {
         const el:HTMLElement | null = document.querySelector(selector) || null;
 
@@ -124,9 +133,9 @@ function createInteractionsAndRequests(win:BrowserWindow){
       if(title == null) {
         throw new Error("Nenhum título encontrado");
       }
-      title = title.trim();
-      console.log("título: ",title);
+      title = sanitizeDirectoryName(title);
 
+      verifyProcess(true, true, "Buscando capítulos de "+title);
       const chapters: { chapter:string, href:string }[] = await page.evaluate((selector: string) => {
         const el:NodeListOf<HTMLAnchorElement> | null =  document.querySelectorAll(selector) || null;
         const links: { chapter:string, href:string }[] = [];
@@ -142,22 +151,49 @@ function createInteractionsAndRequests(win:BrowserWindow){
       }, chapter_selector);
 
       if(chapters.length == 0){
-        console.log("Nenhum capítulo encontrado!")
+        verifyProcess(true, true, "Nenhum capítulo encontrado");
         return
       }
       console.log("capítulos: ",chapters);
 
+      let total_progress:number = 0
       const chapterAndPages:{ chapter: string, pages: string[] }[] = []
       for(const chapter of chapters){
+        verifyProcess(true, true, "Buscando páginas de "+chapter.chapter);
         const pages:string[] = await getPages(chapter.href, browser, page_selector);
         chapterAndPages.push({
           chapter: chapter.chapter,
           pages: pages,
         })
+        total_progress+= pages.length;
       }
 
-      console.log("Páginas de capítulos: ",chapterAndPages);
+      const dir = join(__dirname, ...downloadDir, site_slug, title);
+      verifyDir(dir);
 
+      for(const chapter of chapterAndPages){
+        const chapterName: string = sanitizeDirectoryName(chapter.chapter)
+        for(let i = 0; i < chapter.pages.length; i++){
+          
+          const ext:string = extname(chapter.pages[i]);
+          const filename: string = `page-${ i + 1 }${ext}`;
+          let saveIn: string = join(__dirname, ...downloadDir, site_slug, title, chapterName);
+          verifyDir(saveIn);
+
+          saveIn = join(saveIn, filename)
+          if(!fs.existsSync(saveIn)){
+            downloadProgress(total_progress, false, true, `Baixando: ${chapter.chapter} - ${filename}`)
+            await saveImages(chapter.pages[i], saveIn);
+          } else {
+            downloadProgress(total_progress, false, true, `Baixando: ${chapter.chapter} - ${filename}`)
+          }
+        }
+
+      }
+
+      total_progress = 0;
+      current_progress = 0;
+      alertProcess(true, false, "História baixada com sucesso");
       await browser.close();
     }catch (err){
       console.log(err);
@@ -198,7 +234,7 @@ const getPages = async (url: string, browser: Browser, selector:string): Promise
   page.setDefaultNavigationTimeout(60000);
   page.setDefaultTimeout(60000);
   try{
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
     await page.setUserAgent(userAgent);
 
     const pages: string[] = await page.evaluate((selector) => {
@@ -219,6 +255,38 @@ const getPages = async (url: string, browser: Browser, selector:string): Promise
     return [];
   }finally {
     await page.close();
+  }
+}
+
+const saveImages = async (url:string, dir:string): Promise<void> => {
+  try{
+    const response = await axios({
+      method: 'GET',
+      url,
+      responseType: 'stream'
+    })
+
+    return new Promise((resolve, reject) => {
+      response.data
+        .pipe(fs.createWriteStream(dir))
+        .on('finish', resolve)
+        .on('error', reject)
+    })
+  }catch (err){
+    console.log("Erro da função saveImage: ", err);
+  }
+}
+
+function sanitizeDirectoryName(title: string): string {
+  // Lista de caracteres proibidos no Windows para nomes de arquivos e diretórios
+  const forbiddenChars = /[<>:"/\\|?*\x00-\x1F]/g;
+  // Substituir caracteres proibidos por um hífen ou qualquer outro caractere
+  return title.trim().replace(forbiddenChars, '-');
+}
+
+const verifyDir = async (dir:string) => {
+  if(!fs.existsSync(dir)){
+    fs.mkdirSync(dir, { recursive: true });
   }
 }
 

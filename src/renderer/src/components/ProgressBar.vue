@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { storeProgress } from '@renderer/stores/storeProgress';
 
 const store = storeProgress();
-const { progress, verify } = storeToRefs(store);
+const { progress, verify, message } = storeToRefs(store);
 
 defineProps<{ titleProgress:string }>()
 let interval:null | ReturnType<typeof setInterval> = null;
@@ -30,6 +30,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="progress-percent">{{ progress }}%</div>
         </template>
+        <small class="message">{{ message }}</small>
     </div>
 </template>
 
@@ -68,6 +69,17 @@ onBeforeUnmount(() => {
 .progress-bar{
     @apply
     duration-500
+}
+
+.progress-percent{
+    @apply
+    font-bold
+}
+
+.message{
+    @apply
+    mt-3
+    inline-block
 }
 
 @keyframes verify {

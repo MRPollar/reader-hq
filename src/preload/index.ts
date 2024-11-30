@@ -16,7 +16,12 @@ if (process.contextIsolated) {
       getSite: async (data:{ slug:string }):Promise<ISite> => ipcRenderer.invoke('get-site', data),
       downloadSite: async (data:{ url: string, slug: string }): Promise<void> => ipcRenderer.invoke("download-story",data)
     })
-    contextBridge.exposeInMainWorld('electron', electronAPI)
+    contextBridge.exposeInMainWorld('electron', {
+      on: (channel, listener) => {
+        ipcRenderer.on(channel, (_, args) => listener(args));
+      },
+      ...electronAPI
+    })
     contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
     console.error(error)

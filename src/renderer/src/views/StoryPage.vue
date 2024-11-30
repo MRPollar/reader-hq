@@ -11,7 +11,12 @@ const files:Ref<IFiles[]> = ref([])
 
 onMounted(async () => {
     const { data }:{ data:{ files:IFiles[], ok:boolean } } = await api.get(`/story/${props.site}/${props.name}`);
-    files.value = data.files.reverse();
+    const sortData:IFiles[] = data.files.sort((a, b) => {
+        const numA = parseInt(a.name.match(/\d+/)?.[0] ?? "0", 10);
+        const numB = parseInt(b.name.match(/\d+/)?.[0] ?? "0", 10);
+        return numA - numB;
+    });
+    files.value = sortData.reverse();
 })
 </script>
 
