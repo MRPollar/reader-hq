@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref, onMounted } from 'vue';
-import type IStoryProps from 'src/types/IStoryProps';
-import type IFiles from 'src/types/IFiles';
+import type IStoryProps from '../../../types/IStoryProps';
+import type IFiles from '../../../types/IFiles';
 import GridCards from '@renderer/components/GridCards.vue';
 import FileCard from '@renderer/components/FileCard.vue';
 import api from '@renderer/api';

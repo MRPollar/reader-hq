@@ -18,7 +18,10 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:linux": "npm run build && electron-builder --linux",
+    "package-mac:build": "electron-packager ./ reader-HQ --platform=darwin --arch=x64",
+    "package-win:build": "electron-packager ./ reader-HQ --platform=win32 --arch=x64",
+    "package-linux:build": "electron-packager ./ reader-HQ --platform=linux --arch=x64"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
@@ -29,7 +32,9 @@
     "axios": "^1.7.8",
     "better-sqlite3": "^11.6.0",
     "cors": "^2.8.5",
+    "electron-packager": "^17.1.2",
     "express": "^4.21.1",
+    "global": "^4.4.0",
     "pinia": "^2.2.8",
     "puppeteer": "^23.9.0",
     "vue-router": "^4.5.0"

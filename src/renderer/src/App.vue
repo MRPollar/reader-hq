@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type IRoute from 'src/types/IRoute';
+import type IRoute from '@types/IRoute';
 import ProgressRound from './components/ProgressRound.vue';
 import { storeSites } from '@renderer/stores/storeSites'
 import { onMounted } from 'vue'

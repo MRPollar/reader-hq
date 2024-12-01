@@ -1,7 +1,7 @@
-import Database from 'better-sqlite3'
+import Database, { Database as IDatabase } from 'better-sqlite3'
 
 class SQLite {
-  private _db:Database;
+  private _db:IDatabase;
   constructor(pathDatabase:string) {
     this._db = new Database(pathDatabase);
   }
@@ -20,7 +20,7 @@ class SQLite {
    * @param whereValues - opcional: uma string de valores que irão substituir os placeholder do where obs: Obrigatório no caso de where ser informado
    * @returns Retorno de Lista de objetos do tipo generico informado
    * */
-  public selectAll<T>(table:string, columns:string[] = ['*'], where?:string, whereValues?:string[]):T[]{
+  public selectAll<T>(table:string, columns:string[] = ['*'], where?:string, whereValues?:(string | number)[]):T[]{
     const columnsJoin:string = columns.join(',');
     let instruction:string = `SELECT ${columnsJoin} FROM ${table}`;
 
@@ -30,9 +30,9 @@ class SQLite {
     let result:T[] = [];
 
     if(where && whereValues){
-      result = select.all(...whereValues);
+      result = select.all(...whereValues) as T[];
     } else {
-      result = select.all();
+      result = select.all() as T[];
     }
     return result;
   }
@@ -47,12 +47,12 @@ class SQLite {
    * @param whereValues - uma string de valores que irão substituir os placeholder do where
    * @returns Retorno de Lista de objetos do tipo generico informado
    * */
-  public selectSingle<T>(table:string, columns:string[] = ['*'], where:string, whereValues:string[]):T{
+  public selectSingle<T>(table:string, columns:string[] = ['*'], where:string, whereValues:(string | number)[]):T{
     const columnsJoin:string = columns.join(',');
     const instruction:string = `SELECT ${columnsJoin} FROM ${table} WHERE ${where}`;
 
     const select = this._db.prepare(instruction);
-    let result = select.get(...whereValues);
+    let result = select.get(...whereValues) as T;
 
     return result;
   }
@@ -67,7 +67,7 @@ class SQLite {
    * @param whereValues - uma string de valores que irão substituir os placeholder do where
    * @returns - Número de alterações no banco
    * */
-  public deleteItem(table:string, where:string, whereValues:string[]):number{
+  public deleteItem(table:string, where:string, whereValues:(string | number)[]):number{
     const instruction:string = `DELETE FROM ${table} WHERE ${where}`;
     const query = this._db.prepare(instruction);
     const result = query.run(...whereValues);
@@ -85,7 +85,7 @@ class SQLite {
    * @param values - um array com os valores que serão inseridos no banco
    * @returns - Número de alterações no banco
    * */
-  public insertData(table:string, columns:string[], values:string[]):number{
+  public insertData(table:string, columns:string[], values:(string | number)[]):number{
     let placeholder:string[] | string = [];
     for(let i=0; i < columns.length; i++){
       placeholder.push("?");

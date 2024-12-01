@@ -14,7 +14,9 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('database', {
       getAllSites: async (): Promise<ISiteItem[]> => ipcRenderer.invoke('get-all-sites'),
       getSite: async (data:{ slug:string }):Promise<ISite> => ipcRenderer.invoke('get-site', data),
-      downloadSite: async (data:{ url: string, slug: string }): Promise<void> => ipcRenderer.invoke("download-story",data)
+      downloadSite: async (data:{ url: string, slug: string }): Promise<void> => ipcRenderer.invoke("download-story",data),
+      deleteSite: async (data:{ id }): Promise<void> => ipcRenderer.invoke("delete-site", data),
+      addSite: async (data:ISite): Promise<void> => ipcRenderer.invoke('add-site', data)
     })
     contextBridge.exposeInMainWorld('electron', {
       on: (channel, listener) => {

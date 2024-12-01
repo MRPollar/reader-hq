@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type IChapterProps from 'src/types/IChapterProps';
-import IFiles from 'src/types/IFiles';
+import type IChapterProps from '../../../types/IChapterProps';
+import type IFiles from '../../../types/IFiles';
 import { onMounted, ref, Ref } from 'vue';
 import api from '@renderer/api';
 

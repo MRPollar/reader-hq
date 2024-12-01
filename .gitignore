@@ -3,6 +3,16 @@ dist
 out
 .DS_Store
 *.log*
-uploads/icons
+uploads/icons/*.jpg
+uploads/icons/*.jpeg
+uploads/icons/*.png
+uploads/icons/*.gif
+uploads/icons/*.bmp
+uploads/icons/*.tiff
+uploads/icons/*.svg
+uploads/icons/*.webp
+!uploads/icons/favicon.png
+
+
 downloads/
 sqlite/

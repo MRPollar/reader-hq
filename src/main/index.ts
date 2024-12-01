@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/reader.png?asset'
 import ServerExpress from '../expressServer'
 import SQLite from '../classes/Database';
 import ISiteItem from '../types/ISiteItem'
@@ -94,8 +94,38 @@ function createInteractionsAndRequests(win:BrowserWindow){
     win.webContents.send("alert-progress", response);
   }
 
-  ipcMain.handle('add-site', async (_,data) => {
+  ipcMain.handle('add-site', async (_,data:ISite):Promise<void> => {
+    const { site_name, url, title_selector, chapter_selector, page_selector } = data;
+    const browser:Browser = await puppeteer.launch({ headless: true });
+    try {
+      const page:Page = await browser.newPage();
+      await page.setUserAgent(userAgent);
+      page.setDefaultTimeout((5 * 60000));
 
+      await page.goto(url);
+      await page.waitForFunction(() => document.readyState == 'complete');
+
+
+      const icon:string[] = await page.evaluate(() => {
+        let metaLinks:NodeListOf<HTMLLinkElement> = document.querySelectorAll("head > link[rel='icon']") || [];
+
+        if(metaLinks.length == 0){
+          metaLinks = document.querySelectorAll("head > link[rel='shortcut icon']") || []
+        }
+        const icons:string[] = Array.from(metaLinks).map((el) => el.href)
+
+        return icons;
+      })
+
+      if(){
+
+      }
+
+    } catch (error) {
+      console.log(error);
+    }finally{
+      await browser.close();
+    }
   });
 
   ipcMain.handle('download-story', async (_,data:{ url: string, slug:string }) => {
@@ -200,12 +230,22 @@ function createInteractionsAndRequests(win:BrowserWindow){
     }
   })
 
-  ipcMain.handle('update-site', (_,data) => {
+  ipcMain.handle('update-site', (_,_data) => {
 
   });
 
-  ipcMain.handle('delete-site', (_,data) => {
+  ipcMain.handle('delete-site', async (_,data:{ id:number }) => {
+    const { id } = data;
+    const { image }:{ image:string } = await db.selectSingle<{ image:string }>('sites',["image"], 'id=?', [id]);
 
+    const result = await db.deleteItem('sites', 'id=?',[id]);
+
+    const file = join(__dirname, '..', '..', 'uploads', 'icons', image)
+    if(result > 0 && fs.existsSync(file) && image !== 'favicon.png'){
+      fs.unlinkSync(file);
+    }
+
+    console.log(image);
   });
 
   ipcMain.handle('get-site', (_,data:{ slug:string }):ISite => {

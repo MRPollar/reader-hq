@@ -2,7 +2,6 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import { join, resolve } from 'path'
 import fs, { Dirent } from "fs";
-import { j } from 'vite/dist/node/types.d-aGj9QkWt'
 
 class ServerExpress{
     private _app:Application
@@ -30,7 +29,7 @@ class ServerExpress{
 
     private routers():void{
 
-        this._app.get('/root', async (req:Request, res:Response) => {
+        this._app.get('/root', async (_req:Request, res:Response) => {
             try {
                 const absoluteDir = resolve(`${this._files}`);
                 const entries:Dirent[] = await fs.readdirSync(absoluteDir, { withFileTypes: true });

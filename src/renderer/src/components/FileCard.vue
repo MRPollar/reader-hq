@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IFiles from 'src/types/IFiles';
+import IFiles from '@types/IFiles';
 
 defineProps<{ dir:IFiles, name:string, params:any }>();
 

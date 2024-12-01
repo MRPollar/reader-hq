@@ -12,6 +12,8 @@ declare global {
       getAllSites: () => Promise<ISiteItem[]>,
       getSite: (data: { slug: string }) => Promise<ISite>,
       downloadSite: (data: { url: string, slug: string }) => Promise<void>,
+      deleteSite: (data:{ id:number }) => Promise<void>,
+      addSite: (data:ISite) => Promise<void>
     }
     electron: IElectron
     api: unknown

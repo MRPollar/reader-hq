@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type ISite from 'src/types/ISite';
 import ButtonDefault from '@renderer/components/ButtonDefault.vue';
 import InputText from '@renderer/components/InputText.vue';
 

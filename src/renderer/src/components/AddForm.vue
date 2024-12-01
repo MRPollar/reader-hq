@@ -1,27 +1,38 @@
 <script setup lang="ts">
-import type ISite from 'src/types/ISite';
+import type ISite from '../../../types/ISite';
 import { ref, Ref } from 'vue';
 import InputText from './InputText.vue';
 import ButtonDefault from './ButtonDefault.vue';
+import verifyInputs from '@renderer/functions/verifyInputs';
 
 const emit = defineEmits<{ (e:'submit-control'):void }>()
 const formInputs:Ref<ISite> = ref({
-    name_site:'',
-    url_site:'',
+    site_name:'',
+    url:'https://oldi.sussytoons.com/',
     title_selector:'',
     chapter_selector:'',
     page_selector:''
 })
 
-const handleSubmit = ():void => {
-    console.log(formInputs.value);
+const handleSubmit = async ():Promise<void> => {
+    try {
+        const recordData:Record<string, (string | number)> = { ...formInputs.value }
 
-    const objectList = Object.entries(formInputs.value)
-    for(const [key] of objectList){
-        formInputs.value[key] = '';
+        if(!verifyInputs(recordData)) return;
+
+        await window.database.addSite({ ...formInputs.value });
+
+        const objectList = Object.entries(formInputs.value)
+        for(const [key] of objectList){
+            formInputs.value[key] = '';
+        }
+
+        // emit('submit-control');
+    } catch (error) {
+        console.log(error);
+    } finally{
+
     }
-
-    emit('submit-control');
 }
 
 </script>
@@ -31,11 +42,11 @@ const handleSubmit = ():void => {
         <h3>Adicionar novo site</h3>
         <label>
             Nome do site:
-            <InputText v-model="formInputs.name_site"/>
+            <InputText v-model="formInputs.site_name"/>
         </label>
         <label>
             URL do site:
-            <InputText v-model="formInputs.url_site" type="url"/>
+            <InputText v-model="formInputs.url" type="url"/>
         </label>
         <label>
             Seletor de título da história:

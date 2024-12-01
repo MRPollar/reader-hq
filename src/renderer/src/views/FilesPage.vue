@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import FileCard from '@renderer/components/FileCard.vue';
 import GridCards from '@renderer/components/GridCards.vue';
-import type IFiles from 'src/types/IFiles';
+import type IFiles from '../../../types/IFiles';
 import { onMounted, Ref, ref } from 'vue';
 import api from '@renderer/api';
 

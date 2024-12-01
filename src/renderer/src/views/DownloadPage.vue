@@ -2,7 +2,7 @@
 import InputText from '@renderer/components/InputText.vue';
 import ProgressBar from '@renderer/components/ProgressBar.vue';
 import { onMounted, ref, Ref } from 'vue'
-import ISite from '../../../types/ISite'
+import type ISite from '../../../types/ISite'
 import { storeProgress } from '@renderer/stores/storeProgress'
 import { storeToRefs } from 'pinia'
 import verifyInputs from '@renderer/functions/verifyInputs'
@@ -42,9 +42,9 @@ const download_story = (): void => {
         <form @submit.prevent="download_story">
             <label class="label_flex">
                 <span>{{ site?.url }}</span>
-                <InputText v-model="urlRest"/>
+                <InputText v-model="urlRest" :disabled="visible"/>
             </label>
-            <button type="submit" class="button-download">Baixar</button>
+            <button type="submit" class="button-download" :disabled="visible">Baixar</button>
         </form>
         <ProgressBar v-if="visible" title-progress="Baixando"/>
     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type ISiteProps from 'src/types/ISiteProps';
-import type IFiles from 'src/types/IFiles';
+import type ISiteProps from "../../../types/ISiteProps";
+import type IFiles from '../../../types/IFiles';
 import GridCards from '@renderer/components/GridCards.vue';
 import FileCard from '@renderer/components/FileCard.vue';
 import api from '@renderer/api';

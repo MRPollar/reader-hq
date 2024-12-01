@@ -9,17 +9,17 @@ import AddForm from '@renderer/components/AddForm.vue';
 import { storeSites } from '@renderer/stores/storeSites'
 import { storeToRefs } from 'pinia'
 
-const { sites } = storeToRefs(storeSites());
+const store = storeSites();
+const { sites } = storeToRefs(store);
 
 
-const addItemBox:Ref<boolean> = ref(false);
+const addItemBox:Ref<boolean> = ref(true);
 const deleteBox:Ref<boolean> = ref(false);
 const itemDeleteID:Ref<number> = ref(0);
-const nums:Ref<number[]> = ref([1,2,3,4]);
 
 
 // Abre e fecha a modal de alerta para confirmação
-const handleDeleteModalToggle = ():void => {
+const handleDeleteModalToggle = (): void => {
     deleteBox.value = !deleteBox.value;
 }
 // Aciona um evento para a modal de abrir e capturar o id do item que vai ser deletado
@@ -28,14 +28,15 @@ const handleDeleteBoxItem = (id:number): void => {
     handleDeleteModalToggle();
 }
 // Ação de confirmação da modal
-const handleDeleteItem = (): void => {
-    console.log(itemDeleteID.value);
+const handleDeleteItem = async (): Promise<void> => {
+    await window.database.deleteSite({ id:itemDeleteID.value });
     handleDeleteModalToggle();
+    await store.getAllSites();
 }
 
 // Controle de modal de formulário para adição de novo site
 // Abre o fecha modal de formulário
-const handleAddItemModalToggle = ():void => {
+const handleAddItemModalToggle = (): void => {
     addItemBox.value = !addItemBox.value
 }
 
