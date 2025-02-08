@@ -1,7 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/reader.png?asset'
 import ServerExpress from '../expressServer'
 import SQLite from '../classes/Database';
 import ISiteItem from '../types/ISiteItem'
@@ -41,7 +40,7 @@ function createWindow(): void {
     minHeight: 670,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon: resolve(__dirname, '../../resources/icon.ico'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -64,7 +63,7 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
+  mainWindow.webContents.openDevTools();
   server.start();
   createInteractionsAndRequests(mainWindow);
 }
@@ -98,27 +97,64 @@ function createInteractionsAndRequests(win:BrowserWindow){
     const { site_name, url, title_selector, chapter_selector, page_selector } = data;
     const browser:Browser = await puppeteer.launch({ headless: true });
     try {
+      verifyProcess(true, false, "Iniciando...");
       const page:Page = await browser.newPage();
       await page.setUserAgent(userAgent);
       page.setDefaultTimeout((5 * 60000));
 
-      await page.goto(url);
+      verifyProcess(true, false, "Acessando "+url);
+      await page.goto(url.trim());
+      verifyProcess(true, false, "Esperando conteúdo dinãmico");
       await page.waitForFunction(() => document.readyState == 'complete');
 
 
-      const icon:string[] = await page.evaluate(() => {
+      verifyProcess(true, false, "Buscando ícones");
+      const icons:string[] = await page.evaluate(() => {
         let metaLinks:NodeListOf<HTMLLinkElement> = document.querySelectorAll("head > link[rel='icon']") || [];
 
         if(metaLinks.length == 0){
           metaLinks = document.querySelectorAll("head > link[rel='shortcut icon']") || []
         }
-        const icons:string[] = Array.from(metaLinks).map((el) => el.href)
+        const icons:string[] = Array.from(metaLinks).map((el) => el.href) || [];
 
         return icons;
       })
 
-      if(){
+      let filename:string = 'favicon.png'
+      let saveIn:string = '';
+      let icon:string = '';
+      if(icons.length > 0){
+        icon = icons[icons.length-1];
+        filename = `${Date.now()}${extname(icon)}`;
+        saveIn = join(__dirname, '..', '..', 'uploads', 'icons');
+        verifyDir(saveIn);
+        saveIn = join(saveIn, filename);
+      }
 
+      const slug:string = sanitizeDirectoryName(site_name).toLowerCase().replace(/ /g, '-');
+
+      const result:number = db.insertData('sites',
+        [
+          'image',
+          'site_slug',
+          'site_name',
+          'url',
+          'title_selector',
+          'chapter_selector',
+          'page_selector'
+        ],[
+          filename,
+          slug,
+          site_name,
+          url,
+          title_selector,
+          chapter_selector,
+          page_selector
+        ]
+      );
+
+      if(filename !== 'favicon.png' && result > 0){
+        saveImages(icon, saveIn);
       }
 
     } catch (error) {
@@ -244,8 +280,6 @@ function createInteractionsAndRequests(win:BrowserWindow){
     if(result > 0 && fs.existsSync(file) && image !== 'favicon.png'){
       fs.unlinkSync(file);
     }
-
-    console.log(image);
   });
 
   ipcMain.handle('get-site', (_,data:{ slug:string }):ISite => {

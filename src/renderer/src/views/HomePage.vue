@@ -13,7 +13,7 @@ const store = storeSites();
 const { sites } = storeToRefs(store);
 
 
-const addItemBox:Ref<boolean> = ref(true);
+const addItemBox:Ref<boolean> = ref(false);
 const deleteBox:Ref<boolean> = ref(false);
 const itemDeleteID:Ref<number> = ref(0);
 

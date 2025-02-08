@@ -19,9 +19,9 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "package-mac:build": "electron-packager ./ reader-HQ --platform=darwin --arch=x64",
-    "package-win:build": "electron-packager ./ reader-HQ --platform=win32 --arch=x64",
-    "package-linux:build": "electron-packager ./ reader-HQ --platform=linux --arch=x64"
+    "packager-mac:build": "electron-packager ./ reader-HQ --platform=darwin --arch=x64 --icon resources/icon.icns --out=packages --ignore='^/src|^/downloads/.*|^/uploads/icons/.*|^/uploads/icons/!favicon.png|^/test|^/docs'",
+    "packager-win:build": "electron-packager ./ reader-HQ --platform=win32 --arch=x64 --icon resources/icon.ico --out=packages --ignore='^/src|^/downloads/.*|^/uploads/icons/.*|^/uploads/icons/!favicon.png|^/test|^/docs'",
+    "packager-linux:build": "electron-packager ./ reader-HQ --platform=linux --arch=x64 --icon resources/icon.ico --out=packages --ignore='^/src|^/downloads/.*|^/uploads/icons/.*|^/uploads/icons/!favicon.png|^/test|^/docs'"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
